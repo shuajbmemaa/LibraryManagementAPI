@@ -84,12 +84,6 @@ namespace LibraryManagementAPI.Extensions
                 });
             });
 
-            services.AddSingleton(_ =>
-            {
-                var apiKey = configuration["OpenAI:ApiKey"];
-                return new OpenAIClient(apiKey);
-            });
-
             return services;
         }
     }
