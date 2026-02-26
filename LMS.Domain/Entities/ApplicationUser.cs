@@ -8,6 +8,5 @@ namespace LMS.Domain.Entities
         public ICollection<Book> Books { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
-        DateTime IBaseEntity.CreatedAt { get; set; }
     }
 }

@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Admin")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly IUserService _userService;
 
@@ -21,21 +19,21 @@ namespace LibraryManagementAPI.Controllers
         public async Task<IActionResult> Create(CreateUserDto userDto)
         {
             var result = await _userService.CreateAsync(userDto);
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var result = await _userService.GetAllAsync();
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _userService.DeleteAsync(id);
-            return Ok(result);
+            return CreateResponse(result);
         }
         
     }

@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize]
-    public class BookController : ControllerBase
+    public class BookController : BaseController
     {
         private readonly IBookService _bookService;
 
@@ -22,35 +20,35 @@ namespace LibraryManagementAPI.Controllers
         public async Task<IActionResult> GetAll([FromQuery] BookFilterDto? dto)
         {
             var result = await _bookService.GetAllAsync(dto);
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateBookDto dto)
         {
             var result = await _bookService.CreateAsync(dto);
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _bookService.DeleteAsync(id);
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _bookService.GetByIdAsync(id);
-            return Ok(result);
+            return CreateResponse(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, UpdateBookDto dto)
         {
             var result = await _bookService.UpdateAsync(id, dto);
-            return Ok(result);
+            return CreateResponse(result);
         }
     }
 }

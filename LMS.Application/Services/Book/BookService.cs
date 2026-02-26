@@ -1,31 +1,34 @@
 ﻿using LMS.Application.DTO.Request.Book;
 using LMS.Application.DTO.Response.Account;
 using LMS.Application.DTO.Response.Book;
+using LMS.Application.Services.User;
+using LMS.Application.Wrappers;
 using LMS.Infrastructure.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using System.Linq.Expressions;
 
 namespace LMS.Application.Services.Book
 {
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUser _currentUser;
 
-        public BookService(IBookRepository bookRepository, IHttpContextAccessor httpContextAccessor)
+        public BookService(IBookRepository bookRepository, ICurrentUser currentUser)
         {
             _bookRepository = bookRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUser = currentUser;
         }
 
-        public async Task<BookResponseDto> CreateAsync(CreateBookDto dto)
+        public async Task<BaseResponse<BookResponseDto>> CreateAsync(CreateBookDto dto)
         {
             var book = MapToBook(dto);
 
             await _bookRepository.Create(book);
 
-            return MapToDto(book);
+            var result = MapToDto(book);
+
+            return BaseResponse<BookResponseDto>.Ok(result);
         }
 
         private BookResponseDto MapToDto(Domain.Entities.Book book)
@@ -47,7 +50,8 @@ namespace LMS.Application.Services.Book
 
         private Domain.Entities.Book MapToBook(CreateBookDto dto)
         {
-            var userId = GetCurrentUserId();
+            var userId = _currentUser.UserId;
+
             return new Domain.Entities.Book
             {
                 Title = dto.Title,
@@ -58,76 +62,76 @@ namespace LMS.Application.Services.Book
             };
         }
 
-        public async Task<bool> DeleteAsync(Guid id)
+        public async Task<BaseResponse<bool>> DeleteAsync(Guid id)
         {
             var book = await _bookRepository.GetById(id);
-            if (book == null) return false;
 
-            if (GetCurrentUserRole() != "Admin" && book.UserId != GetCurrentUserId())
-                throw new UnauthorizedAccessException();
-
-            return await _bookRepository.Delete(id) > 0;
-        }
-
-        public async Task<List<BookResponseDto>> GetAllAsync(BookFilterDto? filter = null)
-        {
-            IQueryable<Domain.Entities.Book> query = _bookRepository.GetAll()
-                .Include(b => b.User);
-
-            if (GetCurrentUserRole() != "Admin")
+            if (book == null)
             {
-                var userId = GetCurrentUserId();
-                query = query.Where(b => b.UserId == userId);
+                return BaseResponse<bool>.BadRequest("Book not found");
             }
 
-            query = ApplyFilters(query, filter);
+            if (!_currentUser.IsAdmin && book.UserId != _currentUser.UserId)
+                return BaseResponse<bool>.BadRequest("You are not allowed to delete this book");
 
-            var books = await query.ToListAsync();
-            return books.Select(MapToDto).ToList();
+            var deleted = await _bookRepository.Delete(id) > 0;
+
+            return BaseResponse<bool>.Ok(deleted);
         }
 
-        private IQueryable<Domain.Entities.Book> ApplyFilters(IQueryable<Domain.Entities.Book> query, BookFilterDto? filter)
+        public static Expression<Func<Domain.Entities.Book, BookResponseDto>> BookMapper =>
+            b => new BookResponseDto
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Author = b.Author,
+                Genre = b.Genre,
+                User = new UserInfoDto
+                {
+                    Id = b.UserId,
+                    UserName = b.User.Name
+                }
+            };
+
+        public async Task<BaseResponse<List<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null)
         {
-            if (filter == null) return query;
+            var response = await _bookRepository
+                .GetAll()
+                .Where(b => _currentUser.IsAdmin || b.UserId == _currentUser.UserId)
+                .ApplyFilters(filter)
+                .Select(BookMapper)
+                .ToListAsync();
 
-            if (!string.IsNullOrWhiteSpace(filter.Title))
-                query = query.Where(b => b.Title.Contains(filter.Title));
-
-            if (!string.IsNullOrWhiteSpace(filter.Author))
-                query = query.Where(b => b.Author.Contains(filter.Author));
-
-            if (!string.IsNullOrWhiteSpace(filter.Genre))
-                query = query.Where(b => b.Genre.Contains(filter.Genre));
-
-            if (filter.ReadingStatus != null)
-                query = query.Where(b => b.ReadingStatus == filter.ReadingStatus);
-
-            return query;
+            return BaseResponse<List<BookResponseDto>>.Ok(response);
         }
 
-        public async Task<BookResponseDto?> GetByIdAsync(Guid id)
+        public async Task<BaseResponse<BookResponseDto?>> GetByIdAsync(Guid id)
         {
-            var book = await _bookRepository.GetAll().Include(b => b.User).FirstOrDefaultAsync(b => b.Id == id);
-            if (book == null) return null;
+            var book = await _bookRepository.GetAll()
+                .Include(b => b.User)
+                .Where(x => _currentUser.IsAdmin || x.UserId == _currentUser.UserId)
+                .FirstOrDefaultAsync(b => b.Id == id);
 
-            if (GetCurrentUserRole() != "Admin" && book.UserId != GetCurrentUserId())
-                throw new UnauthorizedAccessException();
+            var response = MapToDto(book);
 
-            return MapToDto(book);
+            return BaseResponse<BookResponseDto?>.Ok(response);
         }
 
-        public async Task<BookResponseDto?> UpdateAsync(Guid id, UpdateBookDto dto)
+        public async Task<BaseResponse<BookResponseDto?>> UpdateAsync(Guid id, UpdateBookDto dto)
         {
             var book = await _bookRepository.GetById(id);
-            if (book == null) return null;
 
-            if (GetCurrentUserRole() != "Admin" && book.UserId != GetCurrentUserId())
-                throw new UnauthorizedAccessException();
+            if (book == null)
+                return BaseResponse<BookResponseDto?>.NotFound("Book not found");
+
+            if (!_currentUser.IsAdmin && book.UserId != _currentUser.UserId)
+                return BaseResponse<BookResponseDto?>.BadRequest("You are not allowed to update this book");
 
             MapUpdate(book, dto);
 
             await _bookRepository.Update(book);
-            return MapToDto(book);
+
+            return BaseResponse<BookResponseDto?>.Ok(MapToDto(book));
         }
 
         private void MapUpdate(Domain.Entities.Book book, UpdateBookDto dto)
@@ -136,18 +140,6 @@ namespace LMS.Application.Services.Book
             book.Author = dto.Author ?? book.Author;
             book.Genre = dto.Genre ?? book.Genre;
             book.ReadingStatus = dto.ReadingStatus ?? book.ReadingStatus;
-        }
-
-        private Guid GetCurrentUserId()
-        {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null) throw new UnauthorizedAccessException();
-            return Guid.Parse(userIdClaim);
-        }
-
-        private string GetCurrentUserRole()
-        {
-            return _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Role).Value;
         }
     }
 }

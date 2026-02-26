@@ -19,18 +19,12 @@ namespace LibraryManagementAPI.Controllers
         public async Task<IActionResult> OllamaQuery(AiQueryRequest req)
         {
             var plan = await _oaQueryService.GenerateQueryPlanAsync(req.Question);
-            if (plan == null)
-                return BadRequest("Su bo format mire.");
 
             var (data, count) = await _oaQueryService.ExecuteQueryPlanAsync(plan);
 
-            var message = ChatResponseBuilder.Build(
-                plan.Chat,
-                data,
-                count
-            );
+            var message = ChatResponseBuilder.Build(plan.Chat, data, count);
 
-            return Ok(new{message, data});
+            return Ok(new { message, data });
         }
     }
 }
