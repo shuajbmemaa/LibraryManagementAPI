@@ -11,20 +11,10 @@ namespace LibraryManagementAPI.Controllers
         {
             if (response == null)
             {
-                return NotFound();
+                return StatusCode(500, BaseResponse.ServerError("Response object was null"));
             }
 
-            if (response.Status == 404)
-            {
-                return NotFound(response);
-            }
-
-            if (response.Status == 400)
-            {
-                return BadRequest(response);
-            }
-
-            return Ok(response);
+            return StatusCode(response.Status, response);
         }
     }
 }

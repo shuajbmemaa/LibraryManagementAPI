@@ -68,7 +68,7 @@ namespace LMS.Application.Services.Book
 
             if (book == null)
             {
-                return BaseResponse<bool>.BadRequest("Book not found");
+                return BaseResponse<bool>.NotFound("Book not found");
             }
 
             if (!_currentUser.IsAdmin && book.UserId != _currentUser.UserId)
@@ -86,6 +86,7 @@ namespace LMS.Application.Services.Book
                 Title = b.Title,
                 Author = b.Author,
                 Genre = b.Genre,
+                ReadingStatus = b.ReadingStatus,
                 User = new UserInfoDto
                 {
                     Id = b.UserId,
@@ -111,6 +112,11 @@ namespace LMS.Application.Services.Book
                 .Include(b => b.User)
                 .Where(x => _currentUser.IsAdmin || x.UserId == _currentUser.UserId)
                 .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (book is null)
+            {
+                return BaseResponse<BookResponseDto?>.NotFound("Book not found or access denied");
+            }
 
             var response = MapToDto(book);
 

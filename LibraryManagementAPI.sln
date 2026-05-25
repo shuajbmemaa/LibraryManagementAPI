@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34518.117
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagementAPI", "LibraryManagementAPI\LibraryManagementAPI.csproj", "{6B81733F-133A-4BB3-B5F9-BE83A0CC4225}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Infrastructure", "LMS.Infrastructure\LMS.Infrastructure.csproj", "{6363F2B3-0681-44AC-8DDB-6053A657DF96}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Application", "LMS.Application\LMS.Application.csproj", "{4D1004B5-D361-4012-9F70-5A018DFD452F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Benchmarks", "LMS.Benchmarks\LMS.Benchmarks.csproj", "{BBC7BE58-D0DE-47DF-AFE3-6CFB14CF1F57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{4D1004B5-D361-4012-9F70-5A018DFD452F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D1004B5-D361-4012-9F70-5A018DFD452F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D1004B5-D361-4012-9F70-5A018DFD452F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBC7BE58-D0DE-47DF-AFE3-6CFB14CF1F57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBC7BE58-D0DE-47DF-AFE3-6CFB14CF1F57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBC7BE58-D0DE-47DF-AFE3-6CFB14CF1F57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBC7BE58-D0DE-47DF-AFE3-6CFB14CF1F57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
