@@ -1,5 +1,6 @@
 ﻿using LMS.Application.Services.Account;
 using LMS.Application.Services.AI;
+using LMS.Application.Services.BackgroundServices;
 using LMS.Application.Services.Book;
 using LMS.Application.Services.Token;
 using LMS.Application.Services.User;
@@ -18,6 +19,7 @@ namespace LMS.Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddHttpClient<IOllamaQueryService, OllamaQueryService>();
+            services.AddScoped<IReadingReminderService, ReadingReminderService>();
 
             return services;
         }

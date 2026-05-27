@@ -25,6 +25,17 @@ namespace LMS.Infrastructure.Repositories
                 .ExecuteUpdateAsync(x => x.SetProperty(b => b.IsDeleted, true));
         }
 
+        public async Task<List<Book>> GetActiveBooksWithUsersAsync(CancellationToken ct)
+        {
+            return await _context.Books
+                .AsNoTracking() 
+                .Where(x =>
+                    (x.ReadingStatus == Domain.Enums.ReadingStatus.Reading ||
+                     x.ReadingStatus == Domain.Enums.ReadingStatus.Paused)
+                    && x.UserId != null)
+                .ToListAsync(cancellationToken: ct);
+        }
+
         public IQueryable<Book> GetAll()
         {
             return _context.Books;

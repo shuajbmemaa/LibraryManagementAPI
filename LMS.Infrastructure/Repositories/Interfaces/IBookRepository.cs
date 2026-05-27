@@ -9,5 +9,6 @@ namespace LMS.Infrastructure.Repositories.Interfaces
         Task Create(Book book);
         Task Update(Book book);
         Task<int> Delete(Guid id);
+        Task<List<Book>> GetActiveBooksWithUsersAsync(CancellationToken ct);
     }
 }

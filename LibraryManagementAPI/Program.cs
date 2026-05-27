@@ -1,4 +1,5 @@
 ﻿using FluentValidation.AspNetCore;
+using LibraryManagementAPI.BackgroundWorkers;
 using LibraryManagementAPI.Extensions;
 using LMS.Application;
 using LMS.Application.Wrappers;
@@ -19,6 +20,7 @@ builder.Services.AddControllers(o =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerAndOpenAI(builder.Configuration);
+builder.Services.AddHostedService<ReadingReminderWorker>();
 
 var app = builder.Build();
 
