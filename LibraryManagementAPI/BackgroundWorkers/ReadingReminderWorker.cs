@@ -17,7 +17,7 @@ namespace LibraryManagementAPI.BackgroundWorkers
         {
             _logger.LogInformation("Reading Reminder Background Worker is starting.");
 
-            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(150000));
 
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {

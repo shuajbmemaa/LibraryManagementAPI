@@ -4,6 +4,7 @@ using LMS.Application.Services.BackgroundServices;
 using LMS.Application.Services.Book;
 using LMS.Application.Services.Token;
 using LMS.Application.Services.User;
+using LMS.Application.Wrappers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ namespace LMS.Application
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddHttpClient<IOllamaQueryService, OllamaQueryService>();
             services.AddScoped<IReadingReminderService, ReadingReminderService>();
+            services.AddScoped<ICurrentPaging, DefaultCurrentPaging>();
 
             return services;
         }

@@ -6,7 +6,6 @@ using LMS.Application.Wrappers;
 using LMS.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LMS.Application.Services.Book
 {
@@ -14,11 +13,13 @@ namespace LMS.Application.Services.Book
     {
         private readonly IBookRepository _bookRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly ICurrentPaging _paging;
 
-        public BookService(IBookRepository bookRepository, ICurrentUser currentUser)
+        public BookService(IBookRepository bookRepository, ICurrentUser currentUser, ICurrentPaging paging)
         {
             _bookRepository = bookRepository;
             _currentUser = currentUser;
+            _paging = paging;
         }
 
         public async Task<BaseResponse<BookResponseDto>> CreateAsync(CreateBookDto dto)
@@ -95,18 +96,18 @@ namespace LMS.Application.Services.Book
                 }
             };
 
-        public async Task<BaseResponse<PagedList<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null)
+        public async Task<BaseResponse<PagedResponse<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null)
         {
-            var response = _bookRepository
+            var response = await _bookRepository
                 .GetAll()
+                .AsNoTracking()
                 .Where(b => _currentUser.IsAdmin || b.UserId == _currentUser.UserId)
                 .ApplyFilters(filter)
-                .OrderBy(b => b.Id)
-                .Select(BookMapper);
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(BookMapper)
+                .ToPagedAsync(_paging);
 
-            var pagedResponse = await PagedList<BookResponseDto>.ToPagedListAsync(response);
-
-            return BaseResponse<PagedList<BookResponseDto>>.Ok(pagedResponse);
+            return BaseResponse<PagedResponse<BookResponseDto>>.Ok(response);
         }
 
         public async Task<BaseResponse<BookResponseDto?>> GetByIdAsync(Guid id)
