@@ -6,7 +6,7 @@ namespace LMS.Application.Services.Book
 {
     public interface IBookService
     {
-        Task<BaseResponse<List<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null);
+        Task<BaseResponse<PagedList<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null);
         Task<BaseResponse<BookResponseDto?>> GetByIdAsync(Guid id);
         Task<BaseResponse<BookResponseDto>> CreateAsync(CreateBookDto dto);
         Task<BaseResponse<BookResponseDto?>> UpdateAsync(Guid id, UpdateBookDto dto);

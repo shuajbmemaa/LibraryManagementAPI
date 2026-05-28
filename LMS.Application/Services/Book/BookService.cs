@@ -6,6 +6,7 @@ using LMS.Application.Wrappers;
 using LMS.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace LMS.Application.Services.Book
 {
@@ -94,16 +95,18 @@ namespace LMS.Application.Services.Book
                 }
             };
 
-        public async Task<BaseResponse<List<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null)
+        public async Task<BaseResponse<PagedList<BookResponseDto>>> GetAllAsync(BookFilterDto? filter = null)
         {
-            var response = await _bookRepository
+            var response = _bookRepository
                 .GetAll()
                 .Where(b => _currentUser.IsAdmin || b.UserId == _currentUser.UserId)
                 .ApplyFilters(filter)
-                .Select(BookMapper)
-                .ToListAsync();
+                .OrderBy(b => b.Id)
+                .Select(BookMapper);
 
-            return BaseResponse<List<BookResponseDto>>.Ok(response);
+            var pagedResponse = await PagedList<BookResponseDto>.ToPagedListAsync(response);
+
+            return BaseResponse<PagedList<BookResponseDto>>.Ok(pagedResponse);
         }
 
         public async Task<BaseResponse<BookResponseDto?>> GetByIdAsync(Guid id)
